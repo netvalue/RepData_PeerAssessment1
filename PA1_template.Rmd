@@ -1,20 +1,64 @@
-# Reproducible Research: Peer Assessment 1
+Title Reproducible Research: Peer Assessment 1
+========================================================
+
 
 
 ## Loading and preprocessing the data
-
+```{r}
+activity = read.csv("activity.csv")
+library(plyr)
+goodactivity = subset(activity, !is.na(steps))
+dailyactivity = ddply(goodactivity,.(date),summarize, steps = sum(steps))
+```
 
 
 ## What is mean total number of steps taken per day?
-
-
+```{r histogram, fig.ehight=4}
+hist(dailyactivity$steps, main="Daily Steps", xlab="Days",breaks=10)
+meansteps = mean(dailyactivity$steps)
+mediansteps = median(dailyactivity$steps)
+```
+### Overall Mean Value - `r meansteps`
+### Overall Median Value - `r mediansteps`
 
 ## What is the average daily activity pattern?
-
-
+```{r averagedailyactivity, fig.height=4}
+averagesteps = ddply(goodactivity, .(interval), summarize, avgsteps = mean(steps))
+plot(averagesteps$interval, averagesteps$avgsteps,type="l", main = "Average Steps By Interval", xlab="5mins Interval", ylab ='Average Steps')
+```
 
 ## Imputing missing values
+```{r}
+maxintervaldf = subset(averagesteps, avgsteps == max(averagesteps$avgsteps))
+maxinterval = maxintervaldf$interval
+```
+### Interval with max average steps - `r maxinterval`
 
+## Imputing missing values
+```{r}
+missingdata = subset(activity, is.na(steps))
+missingdatavalues = merge(missingdata, averagesteps[,c("avgsteps","interval")])
+missingdatavalues = data.frame(missingdatavalues$avgsteps,missingdatavalues$date,missingdatavalues$interval)
+colnames(missingdatavalues) = c("steps","date","interval")
+fullactivity<-rbind(goodactivity,missingdatavalues)
+dailyfullactivity = ddply(fullactivity,.(date),summarize, steps = sum(steps))
+```
+
+## What is mean total number of steps taken per day with missing value filled in?
+```{r histogram2, fig.ehight=4}
+hist(dailyfullactivity$steps, main="Daily Steps", xlab="Days",breaks=10)
+meansteps = mean(dailyfullactivity$steps)
+mediansteps = median(dailyfullactivity$steps)
+```
+### Overall Mean Value with missing valuyes filled in  - `r meansteps`
+### Overall Median Value with missing values filled in - `r mediansteps`
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+summary(cars)
+```
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+
